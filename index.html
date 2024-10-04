@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Расписание Мамонова Захара</title>
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f2f2f2;
+      color: #333;
+    }
+
+    h1 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 2em;
+      text-align: center;
+      margin-top: 20px;
+      color: #000;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      padding: 10px 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0;
+      background-color: #fff;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+      overflow-x: auto;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 5px;
+      border: 1px solid #ddd;
+      font-size: 0.9em;
+    }
+
+    th {
+      background-color: #f2f2f2;
+      font-weight: bold;
+      font-family: 'Roboto', sans-serif;
+      color: #000;
+    }
+
+    .day {
+      background-color: #f2f2f2;
+      font-weight: bold;
+      font-family: 'Roboto', sans-serif;
+      color: #000;
+    }
+
+    .time {
+      background-color: #fdd880;
+      font-weight: bold;
+      color: #000;
+      font-family: 'Roboto', sans-serif;
+      padding: 8px;
+    }
+
+    .subject {
+      text-align: center;
+      font-family: 'Open Sans', sans-serif;
+      font-size: 0.8em;
+    }
+
+    .subject-empty {
+      text-align: center;
+      color: #ccc;
+      font-family: 'Open Sans', sans-serif;
+      font-size: 0.8em;
+    }
+
+    .separator {
+      border-top: 3px solid #333;
+    }
+
+    .time-table {
+      font-weight: bold;
+      font-family: 'Roboto', sans-serif;
+      color: #000;
+    }
+
+    .current-time {
+      background-color: rgba(255, 216, 136, 0.3);
+    }
+
+    .time-info {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      padding: 8px;
+      background-color: #fff;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      font-size: 0.8em;
+    }
+
+    /* Стиль для всплывающих окон */
+    .popup-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 15px;
+      background-color: #fff;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      display: none; 
+      z-index: 10; 
+      font-size: 0.9em;
+      width: 300px; 
+      max-width: 90%; 
+    }
+
+    .popup-container.show {
+      display: block; 
+    }
+
+    .popup-close-button {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      cursor: pointer;
+    }
+
+    /* Кнопки переключения дней */
+    .day-navigation {
+      display: flex;
+      justify-content: space-between;
+      margin: 10px 0;
+    }
+
+    .day-navigation button {
+      padding: 8px 15px;
+      background-color: #fdd880;
+      color: #000;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    /* Изменение размера шрифта */
+    .font-size-control {
+      margin: 10px 0;
+    }
+
+    .font-size-control button {
+      padding: 8px 15px;
+      background-color: #fdd880;
+      color: #000;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    /* Подстройка для Айфона 13 Pro Max */
+    @media (max-width: 430px) {
+      table {
+        font-size: 0.7em;
+      }
+
+      th, td {
+        padding: 4px;
+      }
+
+      .time {
+        padding: 6px;
+      }
+
+      .subject {
+        font-size: 0.7em;
+      }
+
+      .time-info {
+        font-size: 0.7em;
+      }
+
+      .day-navigation button {
+        padding: 6px 10px;
+        font-size: 0.8em;
+      }
+
+      .font-size-control button {
+        padding: 6px 10px;
+        font-size: 0.8em;
+      }
+
+      .popup-container {
+        width: 250px; 
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Расписание Мамонова Захара</h1>
+
+  <div class="time-info" id="time-info"></div>
+
+  <div class="day-navigation">
+    <button onclick="showPreviousDay()">Предыдущий день</button>
+    <button onclick="showNextDay()">Следующий день</button>
+  </div>
+
+  <div class="font-size-control">
+    <button onclick="increaseFontSize()">Увеличить шрифт</button>
+    <button onclick="decreaseFontSize()">Уменьшить шрифт</button>
+  </div>
+
+  <table id="scheduleTable">
+    <thead>
+      <tr class="time-table">
+        <th class="time">Время</th>
+        <th class="time"></th>
+        <th class="time">Понедельник</th>
+        <th class="time">Вторник</th>
+        <th class="time">Среда</th>
+        <th class="time">Четверг</th>
+        <th class="time">Пятница</th>
+        <th class="time">Суббота</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="time-table">
+        <td class="time">8:15 - 8:55</td>
+        <td class="day">0-й урок</td>
+        <td class="subject-empty">-</td>
+        <td class="subject-empty">-</td>
+        <td class="subject-empty">-</td>
+        <td class="subject" data-lesson-type="обычный">Олимпиадная математика</td>
+        <td class="subject-empty">-</td>
+        <td class="subject" data-lesson-type="факультатив">Фукультатив по подготовке к ОГЭ по физике</td>
+      </tr>
+      <tr class="time-table">
+        <td class="time">9:00 - 9:40</td>
+        <td class="day">1-й урок</td>
+        <td class="subject" data-lesson-type="обычный">Разговоры о важном</td>
+        <td class="subject" data-lesson-type="обычный">Биология</td>
+        <td class="subject-empty">-</td>
+        <td class="subject" data-lesson-type="обычный">География</td>
+        <td class="subject" data-lesson-type="обычный">История</td>
+        <td class="subject" data-lesson-type="обычный">Физкультура</td>
+      </tr>
+      <tr class="time-table">
+        <td class="time">9:45 - 10:25</td>
+        <td class="day">2-й урок</td>
+        <td class="subject" data-lesson-type="обычный">История</td>
+        <td class="subject" data-lesson-type="обычный">Английский</td>
+        <td class="subject" data-lesson-type="обычный">Английский</td>
+        <td class="subject" data-lesson-type="обычный">Литература</td>
+        <td class="subject" data-lesson-type="обычный">Физика</td>
+        <td class="subject" data-lesson-type="обычный">Химия</td>
+      </tr>
+      <tr class="time-table">
+        <td class="time">10:30 - 11:10</td>
+        <td class="day">3-й урок</td>
+        <td class="subject" data-lesson-type="обычный">Русский язык</td>
+        <td class="subject" data-lesson-type="обычный">Обществознание</td>
+        <td class="subject" data-lesson-type="обычный">Русский язык</td>
+        <td class="subject" data-lesson-type="обычный">Физкультура</td>
+        <td class="subject" data-lesson-type="обычный">Физика</td>
+        <td class="subject" data-lesson-type="обычный">Информатика</td>
+      </tr>
+      <tr class="time-table">
+        <td class="time">11:30 - 12:10</td>
+        <td class="day">4-й урок</td>
+        <td class="subject" data-lesson-type="обычный">Литература</td>
+        <td class="subject" data-lesson-type="обычный">Русский язык</td>
+        <td class="subject" data-lesson-type="обычный">Литература</td>
+        <td class="subject" data-lesson-type="обычный">Информатика</td>
+        <td class="subject" data-lesson-type="обычный">Английский</td>
+        <td class="subject" data-lesson-type="обычный">Алгебра</td>
+      </tr>
+      <tr class="time-table">
+        <td class="time">12:25 - 13:05</td>
+        <td class="day">5-й урок</td>
+        <td class="subject" data-lesson-type="обычный">География</td>
+        <td class="subject" data-lesson-type="обычный">Алгебра</td>
+        <td class="subject" data-lesson-type="обычный">Физика</td>
+        <td class="subject" data-lesson-type="обычный">Геометрия</td>
+        <td class="subject" data-lesson-type="обычный">Вероятность и статистика</td>
+        <td class="subject" data-lesson-type="обычный">Алгебра</td>
+      </tr>
+      <tr class="time-table">
+        <td class="time">13:20 - 14:00</td>
+        <td class="day">6-й урок</td>
+        <td class="subject" data-lesson-type="обычный">Химия</td>
+        <td class="subject" data-lesson-type="обычный">Алгебра</td>
+        <td class="subject" data-lesson-type="обычный">Физика</td>
+        <td class="subject" data-lesson-type="обычный">Геометрия</td>
+        <td class="subject" data-lesson-type="обычный">Алгебра</td>
+        <td class="subject" data-lesson-type="обычный">ОБЗР</td>
+      </tr>
+      <tr class="time-table">
+        <td class="time">14:05 - 14:45</td>
+        <td class="day">7-й урок</td>
+        <td class="subject" data-lesson-type="обычный">Биология</td>
+        <td class="subject" data-lesson-type="обычный">Введение в историю России</td>
+        <td class="subject" data-lesson-type="обычный">Труд (технология)</td>
+        <td class="subject-empty">-</td>
+        <td class="subject" data-lesson-type="факультатив">Факультатив по подготовке к ОГЭ по математике</td>
+        <td class="subject-empty">-</td>
+      </tr>
+      <tr class="separator"></tr>
+
+      <tr>
+        <td class="time">15:00 - 16:20</td>
+        <td class="subject-empty">-</td>
+        <td class="subject-empty">-</td>
+        <td class="subject-empty">-</td>
+        <td class="subject-empty">-</td>
+        <td class="subject-empty">-</td>
+        <td class="subject-empty">-</td>
+        <td class="subject" data-lesson-type="академия">Академия (1-я пара)</td>
+      </tr>
+      <tr>
+        <td class="time">16:00 - 17:00</td>
+        <td class="subject-empty">-</td>
+        <td class="subject" data-lesson-type="факультатив">Английский язык</td>
+        <td class="subject-empty">-</td>
+        <td class="subject-empty">-</td>
+        <td class="subject-empty">-</td>
+        <td class="subject" data-lesson-type="факультатив">Английский язык</td>
+        <td class="subject-empty">-</td>
+      </tr>
+      <tr>
+        <td class="time">16:30 - 17:50</td>
+        <td class="subject-empty">-</td>
+        <td class="subject-empty">-</td>
+        <td class="subject-empty">-</td>
+        <td class="subject-empty">-</td>
+        <td class="subject-empty">-</td>
+        <td class="subject-empty">-</td>
+        <td class="subject" data-lesson-type="академия">Академия (2-я пара)</td>
+      </tr>
+      <tr>
+        <td class="time">16:30 - 18:00</td>
+        <td class="subject-empty">-</td>
+        <td class="subject-empty">-</td>
+        <td class="subject-empty">-</td>
+        <td class="subject" data-lesson-type="факультатив">Подготовка к ОГЭ по физике</td>
+        <td class="subject-empty">-</td>
+        <td class="subject-empty">-</td>
+        <td class="subject-empty">-</td>
+      </tr>
+      <tr>
+        <td class="time">17:30 - 19:00</td>
+        <td class="subject-empty">-</td>
+        <td class="subject-empty">-</td>
+        <td class="subject" data-lesson-type="факультатив">Подготовка к ОГЭ по математике</td>
+        <td class="subject-empty">-</td>
+        <td class="subject-empty">-</td>
+        <td class="subject-empty">-</td>
+        <td class="subject-empty">-</td>
+      </tr>
+      <tr>
+        <td class="time">18:00 - 19:00</td>
+        <td class="subject-empty">-</td>
+        <td class="subject-empty">-</td>
+        <td class="subject-empty">-</td>
+        <td class="subject" data-lesson-type="факультатив">Подготовка к ОГЭ по русскому языку</td>
+        <td class="subject-empty">-</td>
+        <td class="subject-empty">-</td>
+        <td class="subject-empty">-</td>
+      </tr>
+      <tr>
+        <td class="time">18:00 - 20:00</td>
+        <td class="subject-empty">-</td>
+        <td class="subject" data-lesson-type="факультатив">Тренировка</td>
+        <td class="subject-empty">-</td>
+        <td class="subject-empty">-</td>
+        <td class="subject" data-lesson-type="факультатив">Тренировка</td>
+        <td class="subject" data-lesson-type="факультатив">Тренировка</td>
+        <td class="subject-empty">-</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="popup-container" id="lessonPopup">
+    <span class="popup-close-button" onclick="closePopup()">&times;</span>
+    <p id="popupText"></p>
+  </div>
+
+  <div class="popup-container" id="circlePopup">
+    <span class="popup-close-button" onclick="closePopup()">&times;</span>
+    <p id="circleText"></p>
+  </div>
+
+  <script>
+    let currentDayIndex = 0; 
+    let currentFontSize = 1; 
+    let currentPopup = null; 
+
+    function updateTime() {
+      const now = new Date();
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      const formattedDate = now.toLocaleDateString('ru-RU', options);
+      const formattedTime = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+      const formattedDay = now.toLocaleDateString('ru-RU', { weekday: 'long' });
+
+      const timeInfoElement = document.getElementById('time-info');
+      timeInfoElement.innerHTML = `
+        Астраханское время: ${formattedTime}<br>
+        ${formattedDate} (${formattedDay})
+      `;
+
+      // Определяем текущий урок
+      const currentTime = now.getHours() * 60 + now.getMinutes();
+      const tableRows = document.querySelectorAll('.time-table');
+      let nextLessonText = '';
+      let nextLessonFound = false;
+      let nextCircleText = '';
+      let nextCircleFound = false;
+      tableRows.forEach(row => {
+        const timeCells = row.querySelectorAll('.time');
+        if (timeCells.length > 0) {
+          const startTime = parseInt(timeCells[0].textContent.split('-')[0].replace(':', ''));
+          const endTime = parseInt(timeCells[0].textContent.split('-')[1].replace(':', ''));
+          if (currentTime >= startTime && currentTime < endTime) {
+            row.classList.add('current-time');
+          } else {
+            row.classList.remove('current-time');
+          }
+
+          // Ищем следующий урок (до 14:45)
+          if (!nextLessonFound && currentTime < startTime && startTime <= 1445) { 
+            nextLessonFound = true;
+            const lessonTime = timeCells[0].textContent;
+            const dayName = row.querySelector('.day').textContent;
+            const subject = row.querySelectorAll('.subject')[0].textContent;
+            const lessonType = row.querySelector('.subject').dataset.lessonType;
+
+            nextLessonText = `Следующий урок: ${dayName}, ${lessonTime}, ${subject}`;
+          }
+
+          // Ищем следующий кружок (после 14:45)
+          if (!nextCircleFound && currentTime < startTime && startTime > 1445) {
+            nextCircleFound = true;
+            const lessonTime = timeCells[0].textContent;
+            const dayName = row.querySelector('.day').textContent;
+            const subject = row.querySelectorAll('.subject')[0].textContent;
+            const lessonType = row.querySelector('.subject').dataset.lessonType;
+
+            nextCircleText = `Следующий кружок: ${dayName}, ${lessonTime}, ${subject}`;
+          }
+        }
+      });
+
+      if (nextLessonFound) {
+        showPopup('lessonPopup', nextLessonText);
+      } else {
+        closePopup();
+      }
+
+      if (nextCircleFound) {
+        showPopup('circlePopup', nextCircleText);
+      } else {
+        closePopup();
+      }
+    }
+
+    function showPreviousDay() {
+      currentDayIndex = (currentDayIndex - 1 + 7) % 7; 
+      updateSchedule();
+    }
+
+    function showNextDay() {
+      currentDayIndex = (currentDayIndex + 1) % 7; 
+      updateSchedule();
+    }
+
+    function increaseFontSize() {
+      currentFontSize = Math.min(currentFontSize + 0.1, 1.5); 
+      applyFontSize();
+    }
+
+    function decreaseFontSize() {
+      currentFontSize = Math.max(currentFontSize - 0.1, 0.8); 
+      applyFontSize();
+    }
+
+    function applyFontSize() {
+      const scheduleTable = document.getElementById('scheduleTable');
+      scheduleTable.style.fontSize = currentFontSize + 'em';
+    }
+
+    function closePopup() {
+      if (currentPopup) {
+        currentPopup.classList.remove('show');
+        currentPopup = null; 
+      }
+    }
+
+    function showPopup(popupId, text) {
+      closePopup(); 
+      const popup = document.getElementById(popupId);
+      const popupText = document.getElementById(popupId + 'Text');
+      popupText.textContent = text;
+      popup.classList.add('show');
+      currentPopup = popup; 
+    }
+
+    function updateSchedule() {
+      // Логика обновления расписания для выбранного дня
+      const columns = document.querySelectorAll('table th, table td');
+      columns.forEach((column, index) => {
+        if (index % 8 === currentDayIndex + 2) { 
+          column.style.display = 'table-cell';
+        } else {
+          column.style.display = 'none';
+        }
+      });
+    }
+
+    updateTime();
+    setInterval(updateTime, 60000); 
+    updateSchedule(); 
+  </script>
+
+</body>
+</html>
